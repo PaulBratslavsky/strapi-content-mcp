@@ -1,6 +1,6 @@
 {
   "name": "strapi-content-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Strapi v5 plugin that exposes your content via the Model Context Protocol (MCP), enabling AI assistants like Claude to interact directly with your Strapi content.",
   "keywords": [
     "strapi",
@@ -14,13 +14,13 @@
     "headless-cms",
     "content-api"
   ],
-  "homepage": "https://github.com/PaulBrats662/strapi-content-mcp#readme",
+  "homepage": "https://github.com/PaulBratslavsky/strapi-content-mcp#readme",
   "bugs": {
-    "url": "https://github.com/PaulBrats662/strapi-content-mcp/issues"
+    "url": "https://github.com/PaulBratslavsky/strapi-content-mcp/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PaulBrats662/strapi-content-mcp.git"
+    "url": "git+https://github.com/PaulBratslavsky/strapi-content-mcp.git"
   },
   "type": "commonjs",
   "exports": {

@@ -179,5 +179,4 @@ MIT - see [LICENSE](./LICENSE) for details.
 
 ## Author
 
-Paul Bratslavsky ([@PaulBrats662](https://github.com/PaulBrats662))
-# strapi-content-mcp
+Paul Bratslavsky ([@PaulBratslavsky](https://github.com/PaulBratslavsky))
