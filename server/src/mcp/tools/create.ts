@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { validateToolInput } from '../schemas';
+import { sanitizeInput, sanitizeOutput } from '../utils/sanitize';
 
 export const createTool = {
   name: 'create',
@@ -39,8 +40,14 @@ export async function handleCreate(strapi: Core.Strapi, args: unknown) {
     throw new Error(`Content type "${uid}" not found. Use list_content_types to see available content types.`);
   }
 
+  // Sanitize input data before creating
+  const sanitizedData = await sanitizeInput(strapi, uid, data);
+
   const documentService = strapi.plugin('strapi-content-mcp').service('document');
-  const result = await documentService.create(uid, data, { locale, status });
+  const result = await documentService.create(uid, sanitizedData, { locale, status });
+
+  // Sanitize output to remove private fields
+  const sanitizedResult = await sanitizeOutput(strapi, uid, result);
 
   return {
     content: [
@@ -49,7 +56,7 @@ export async function handleCreate(strapi: Core.Strapi, args: unknown) {
         text: JSON.stringify(
           {
             success: true,
-            data: result,
+            data: sanitizedResult,
             uid,
             message: 'Document created successfully',
           },

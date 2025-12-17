@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { validateToolInput } from '../schemas';
+import { sanitizeInput, sanitizeOutput } from '../utils/sanitize';
 
 export const updateTool = {
   name: 'update',
@@ -51,7 +52,13 @@ export async function handleUpdate(strapi: Core.Strapi, args: unknown) {
     throw new Error(`Document with id "${documentId}" not found in "${uid}".`);
   }
 
-  const result = await documentService.update(uid, documentId, data, { locale, status });
+  // Sanitize input data before updating
+  const sanitizedData = await sanitizeInput(strapi, uid, data);
+
+  const result = await documentService.update(uid, documentId, sanitizedData, { locale, status });
+
+  // Sanitize output to remove private fields
+  const sanitizedResult = await sanitizeOutput(strapi, uid, result);
 
   return {
     content: [
@@ -60,7 +67,7 @@ export async function handleUpdate(strapi: Core.Strapi, args: unknown) {
         text: JSON.stringify(
           {
             success: true,
-            data: result,
+            data: sanitizedResult,
             uid,
             documentId,
             message: 'Document updated successfully',

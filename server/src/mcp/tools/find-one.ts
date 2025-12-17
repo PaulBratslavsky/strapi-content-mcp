@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { validateToolInput } from '../schemas';
+import { sanitizeOutput } from '../utils/sanitize';
 
 export const findOneTool = {
   name: 'find_one',
@@ -74,13 +75,16 @@ export async function handleFindOne(strapi: Core.Strapi, args: unknown) {
     };
   }
 
+  // Sanitize output to remove private fields and apply permissions
+  const sanitizedResult = await sanitizeOutput(strapi, uid, result);
+
   return {
     content: [
       {
         type: 'text' as const,
         text: JSON.stringify(
           {
-            data: result,
+            data: sanitizedResult,
             uid,
             documentId,
           },

@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { validateToolInput } from '../schemas';
+import { sanitizeOutput } from '../utils/sanitize';
 
 export const deleteTool = {
   name: 'delete',
@@ -44,6 +45,9 @@ export async function handleDelete(strapi: Core.Strapi, args: unknown) {
 
   const result = await documentService.delete(uid, documentId, { locale });
 
+  // Sanitize output to remove private fields
+  const sanitizedResult = await sanitizeOutput(strapi, uid, result);
+
   return {
     content: [
       {
@@ -51,7 +55,7 @@ export async function handleDelete(strapi: Core.Strapi, args: unknown) {
         text: JSON.stringify(
           {
             success: true,
-            data: result,
+            data: sanitizedResult,
             uid,
             documentId,
             message: 'Document deleted successfully',

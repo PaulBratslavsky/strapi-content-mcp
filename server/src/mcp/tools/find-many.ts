@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { validateToolInput } from '../schemas';
+import { sanitizeOutput } from '../utils/sanitize';
 
 export const findManyTool = {
   name: 'find_many',
@@ -73,14 +74,17 @@ export async function handleFindMany(strapi: Core.Strapi, args: unknown) {
   const documentService = strapi.plugin('strapi-content-mcp').service('document');
   const results = await documentService.findMany(uid, params);
 
+  // Sanitize output to remove private fields and apply permissions
+  const sanitizedResults = await sanitizeOutput(strapi, uid, results);
+
   return {
     content: [
       {
         type: 'text' as const,
         text: JSON.stringify(
           {
-            data: results,
-            count: Array.isArray(results) ? results.length : 0,
+            data: sanitizedResults,
+            count: Array.isArray(sanitizedResults) ? sanitizedResults.length : 0,
             uid,
           },
           null,

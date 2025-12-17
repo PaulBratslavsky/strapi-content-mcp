@@ -1,6 +1,27 @@
 {
-  "version": "0.0.0",
-  "keywords": [],
+  "name": "strapi-content-mcp",
+  "version": "0.1.0",
+  "description": "A Strapi v5 plugin that exposes your content via the Model Context Protocol (MCP), enabling AI assistants like Claude to interact directly with your Strapi content.",
+  "keywords": [
+    "strapi",
+    "strapi-plugin",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "ai",
+    "anthropic",
+    "cms",
+    "headless-cms",
+    "content-api"
+  ],
+  "homepage": "https://github.com/PaulBrats662/strapi-content-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PaulBrats662/strapi-content-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PaulBrats662/strapi-content-mcp.git"
+  },
   "type": "commonjs",
   "exports": {
     "./package.json": "./package.json",
@@ -20,7 +41,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build": "strapi-plugin build",
@@ -68,9 +91,9 @@
     "displayName": "Strapi Content MCP",
     "description": "Expose Strapi Content via MCP"
   },
-  "name": "strapi-content-mcp",
-  "description": "Expose Strapi Content via MCP",
   "license": "MIT",
   "author": "Paul Bratslavsky <paul.bratslavsky@strapi.io>",
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

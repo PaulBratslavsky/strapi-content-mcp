@@ -1,5 +1,5 @@
 import type { Core } from '@strapi/strapi';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
 const mcpController = ({ strapi }: { strapi: Core.Strapi }) => ({
