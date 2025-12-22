@@ -16,6 +16,7 @@ export const FindManySchema = z.object({
   filters: z.record(z.string(), z.any()).optional(),
   populate: z.union([z.string(), z.array(z.string()), z.record(z.string(), z.any())]).optional(),
   fields: z.array(z.string()).optional(),
+  includeContent: z.boolean().optional().default(false),
   sort: z.union([z.string(), z.array(z.string())]).optional(),
   pagination: z
     .object({

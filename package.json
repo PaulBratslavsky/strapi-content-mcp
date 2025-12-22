@@ -1,6 +1,6 @@
 {
   "name": "strapi-content-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Strapi v5 plugin that exposes your content via the Model Context Protocol (MCP), enabling AI assistants like Claude to interact directly with your Strapi content.",
   "keywords": [
     "strapi",

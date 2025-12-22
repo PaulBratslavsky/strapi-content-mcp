@@ -2,10 +2,13 @@ import type { Core } from '@strapi/strapi';
 import { validateToolInput } from '../schemas';
 import { sanitizeOutput } from '../utils/sanitize';
 
+// Fields that are typically large and should be excluded in summary mode
+const LARGE_CONTENT_FIELDS = ['content', 'blocks', 'body', 'richText', 'markdown', 'html', 'rawContent'];
+
 export const findManyTool = {
   name: 'find_many',
   description:
-    'Query multiple documents from a content type. Supports filtering, sorting, pagination, field selection, and population of relations.',
+    'Query multiple documents from a content type. By default, returns summary fields only (excludes large content fields like "content", "blocks", "body"). Set includeContent=true to get full content. Use find_one for single document with full content.',
   inputSchema: {
     type: 'object' as const,
     properties: {
@@ -28,7 +31,11 @@ export const findManyTool = {
       fields: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Fields to select (e.g., ["title", "content"])',
+        description: 'Fields to select (e.g., ["title", "content"]). If specified, includeContent is ignored.',
+      },
+      includeContent: {
+        type: 'boolean',
+        description: 'Set to true to include large content fields (content, blocks, body). Default: false. Warning: may cause context overflow with multiple documents.',
       },
       sort: {
         oneOf: [
@@ -61,9 +68,32 @@ export const findManyTool = {
   },
 };
 
+/**
+ * Recursively removes large content fields from an object
+ */
+function stripLargeFields(obj: unknown): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map(stripLargeFields);
+  }
+
+  if (obj && typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Skip large content fields
+      if (LARGE_CONTENT_FIELDS.includes(key)) {
+        continue;
+      }
+      result[key] = stripLargeFields(value);
+    }
+    return result;
+  }
+
+  return obj;
+}
+
 export async function handleFindMany(strapi: Core.Strapi, args: unknown) {
   const validatedArgs = validateToolInput('find_many', args);
-  const { uid, ...params } = validatedArgs;
+  const { uid, includeContent, ...params } = validatedArgs;
 
   // Validate content type exists
   const contentTypeService = strapi.plugin('strapi-content-mcp').service('content-type');
@@ -75,7 +105,13 @@ export async function handleFindMany(strapi: Core.Strapi, args: unknown) {
   const results = await documentService.findMany(uid, params);
 
   // Sanitize output to remove private fields and apply permissions
-  const sanitizedResults = await sanitizeOutput(strapi, uid, results);
+  let sanitizedResults = await sanitizeOutput(strapi, uid, results);
+
+  // Strip large content fields unless explicitly requested or fields are specified
+  const shouldStripContent = !includeContent && !params.fields;
+  if (shouldStripContent) {
+    sanitizedResults = stripLargeFields(sanitizedResults);
+  }
 
   return {
     content: [
@@ -86,6 +122,7 @@ export async function handleFindMany(strapi: Core.Strapi, args: unknown) {
             data: sanitizedResults,
             count: Array.isArray(sanitizedResults) ? sanitizedResults.length : 0,
             uid,
+            ...(shouldStripContent && { note: 'Large content fields excluded. Use includeContent=true or find_one for full content.' }),
           },
           null,
           2
