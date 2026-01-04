@@ -5,7 +5,6 @@ export default [
     handler: 'mcp.handle',
     config: {
       policies: [],
-      auth: false, // Set to true or add policies for authentication
     },
   },
   {
@@ -14,7 +13,6 @@ export default [
     handler: 'mcp.handle',
     config: {
       policies: [],
-      auth: false,
     },
   },
   {
@@ -23,7 +21,6 @@ export default [
     handler: 'mcp.handle',
     config: {
       policies: [],
-      auth: false,
     },
   },
 ];
