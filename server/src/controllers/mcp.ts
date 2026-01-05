@@ -113,8 +113,37 @@ const mcpController = ({ strapi }: { strapi: Core.Strapi }) => ({
         strapi.log.debug(`[${PLUGIN_ID}] New session created: ${sessionId} (auth: ${ctx.state.authMethod})`);
       }
 
-      // Handle the request
-      await session.transport.handleRequest(ctx.req, ctx.res, ctx.request.body);
+      // Handle the request - wrap in try/catch to handle transport errors
+      try {
+        await session.transport.handleRequest(ctx.req, ctx.res, ctx.request.body);
+      } catch (transportError) {
+        // Transport error likely means SSE stream was terminated by load balancer
+        // Clean up the session so client can reinitialize
+        strapi.log.warn(`[${PLUGIN_ID}] Transport error, cleaning up session: ${requestedSessionId}`, {
+          error: transportError instanceof Error ? transportError.message : String(transportError),
+        });
+
+        try {
+          session.server.close();
+        } catch {
+          // Ignore close errors
+        }
+        plugin.sessions.delete(requestedSessionId);
+
+        // Return error to tell client to reinitialize
+        if (!ctx.res.headersSent) {
+          ctx.status = 400;
+          ctx.body = {
+            jsonrpc: '2.0',
+            error: {
+              code: -32000,
+              message: 'Session transport error. Please reinitialize the connection.',
+            },
+            id: null,
+          };
+        }
+        return;
+      }
 
       // Prevent Koa from handling response
       ctx.respond = false;
