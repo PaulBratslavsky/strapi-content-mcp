@@ -5,7 +5,7 @@ const PLUGIN_ID = 'strapi-content-mcp';
 const OAUTH_PLUGIN_ID = 'strapi-oauth-mcp-manager';
 
 /**
- * Fallback auth middleware for when OAuth plugin is not installed.
+ * Fallback auth middleware for when OAuth manager plugin is not installed.
  * Requires Bearer token (Strapi API token) for MCP endpoints.
  * This allows standalone use with Claude Desktop without OAuth.
  */
@@ -51,27 +51,19 @@ const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
   plugin.createMcpServer = () => createMcpServer(strapi);
   plugin.sessions = new Map(); // Track active sessions
 
-  // Check if OAuth plugin is available
+  // Check if OAuth manager is installed
+  // If not, use fallback auth middleware (API token only)
   const oauthPlugin = strapi.plugin(OAUTH_PLUGIN_ID);
 
   if (oauthPlugin) {
-    // OAuth plugin handles authentication - register our endpoint with it
-    try {
-      await oauthPlugin.service('endpoint').register({
-        name: 'Strapi Content MCP',
-        pluginId: PLUGIN_ID,
-        path: `/api/${PLUGIN_ID}/mcp`,
-        description: 'MCP endpoint for Strapi content management tools',
-      });
-      strapi.log.info(`[${PLUGIN_ID}] Registered with OAuth plugin - supports OAuth + API tokens`);
-    } catch (error) {
-      strapi.log.error(`[${PLUGIN_ID}] Failed to register with OAuth plugin`, { error });
-    }
+    // OAuth manager handles auth via convention-based middleware
+    // Any /api/*/mcp route is automatically protected
+    strapi.log.info(`[${PLUGIN_ID}] OAuth manager detected - OAuth + API token auth enabled`);
   } else {
-    // No OAuth plugin - use fallback auth (API token only)
+    // No OAuth manager - use fallback auth
     const fallbackMiddleware = createFallbackAuthMiddleware(strapi);
     strapi.server.use(fallbackMiddleware);
-    strapi.log.info(`[${PLUGIN_ID}] Using API token authentication (OAuth plugin not installed)`);
+    strapi.log.info(`[${PLUGIN_ID}] Using API token authentication (OAuth manager not installed)`);
   }
 
   strapi.log.info(`[${PLUGIN_ID}] MCP endpoint available at: /api/${PLUGIN_ID}/mcp`);
